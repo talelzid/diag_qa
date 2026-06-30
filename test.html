@@ -1,0 +1,1398 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Employabilité - AEC QA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #030c19;
+            --surface:     #071524;
+            --surface-2:   #0c1e30;
+            --border:      #112238;
+            --border-2:    #183048;
+            --txt:         #f0f0f0;
+            --txt-muted:   #848484;
+            --txt-subtle:  #b0b0b0;
+            --accent:      #7c3aed;
+            --accent-h:    #6d28d9;
+            --accent-dim:  rgba(124, 58, 237, 0.10);
+            --accent-glow: rgba(124, 58, 237, 0.22);
+            --danger:      #ef4444;
+            --r:           8px;
+            --r-sm:        5px;
+            --r-lg:        14px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            line-height: 1.65;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 28px 20px 64px;
+        }
+
+        /* ── Page Header ────────────────────────────────────────────────── */
+        .page-header {
+            width: min(900px, 100%);
+            margin: 0 auto 32px;
+            text-align: center;
+        }
+        .page-title {
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--txt);
+            margin-bottom: 10px;
+        }
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--txt-muted);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        /* ── Stepper ────────────────────────────────────────────────────────── */
+        .stepper {
+            width: min(900px, 100%);
+            margin: 0 auto 28px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+        }
+        .step-bubble {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid var(--border-2);
+            background: var(--surface);
+            color: var(--txt-muted);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .step-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--txt-muted);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            transition: color 0.25s;
+        }
+        .step-connector {
+            flex: 1;
+            height: 2px;
+            background: var(--border-2);
+            min-width: 48px;
+            max-width: 140px;
+            margin-top: 16px;
+            align-self: flex-start;
+        }
+        .step-item.is-active .step-bubble {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 0 4px var(--accent-dim), 0 0 18px var(--accent-glow);
+        }
+        .step-item.is-active .step-label { color: var(--accent); }
+        .step-item.is-done .step-bubble {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .step-item.is-done .step-label { color: var(--txt-subtle); }
+        .progress-container { display: none; }
+
+        /* ── Main Card ──────────────────────────────────────────────────────── */
+        .view-container {
+            width: min(900px, 100%);
+            margin: 0 auto;
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 40px 48px;
+        }
+        .view { display: none; }
+        .view.is-active {
+            display: block;
+            animation: fadeUp 0.28s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Typography ─────────────────────────────────────────────────────── */
+        h2 {
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--txt-muted);
+            margin-bottom: 36px;
+        }
+        h3 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: var(--txt-muted);
+            margin: 40px 0 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            display: block;
+            text-align: left;
+        }
+        h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--txt-muted);
+            margin-bottom: 10px;
+        }
+
+        /* ── Form ───────────────────────────────────────────────────────────── */
+        .form-group { margin-bottom: 22px; }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--txt-subtle);
+            margin-bottom: 7px;
+            text-align: left;
+        }
+        input[type="url"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface-2);
+            color: var(--txt);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r-sm);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            text-align: left;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        select { cursor: pointer; }
+        textarea { resize: vertical; }
+        ::placeholder { color: #3a5a78; }
+
+        /* ── LinkedIn hint ──────────────────────────────────────────────────── */
+        #linkedin-url-status { font-size: 12px; margin-top: 5px; min-height: 16px; text-align: left; }
+
+        /* ── Rating scale ───────────────────────────────────────────────────── */
+        .rating-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            justify-content: flex-start;
+        }
+        .rating-item {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--border-2);
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--txt-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            flex: unset;
+        }
+        .rating-item input { display: none; }
+        .rating-item:has(input:checked) {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 0 3px var(--accent-dim), 0 0 12px var(--accent-glow);
+        }
+        .rating-item:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Buttons ────────────────────────────────────────────────────────── */
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 28px;
+            border-radius: var(--r-sm);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            border: none;
+            margin-top: 28px;
+            background: var(--accent);
+            color: #fff;
+        }
+        button:hover {
+            background: var(--accent-h);
+            box-shadow: 0 4px 22px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        button:active { transform: translateY(0); }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-2);
+            color: var(--txt-muted);
+            font-weight: 500;
+        }
+        .btn-secondary:hover {
+            background: var(--surface-2);
+            color: var(--txt);
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* ── Loading ────────────────────────────────────────────────────────── */
+        #step-loading { text-align: center; padding: 60px 0; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid var(--border-2);
+            border-top-color: var(--accent);
+            animation: spin 0.75s linear infinite;
+            margin: 28px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Interview ──────────────────────────────────────────────────────── */
+        .coach-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r);
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .question-item {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+        .question-item:last-child { border-bottom: none; }
+        .question-item p:first-child {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        .question-item p:nth-child(2) {
+            font-size: 14px;
+            color: var(--txt-subtle);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-weight: normal;
+        }
+        .question-item textarea { min-height: 90px; }
+
+        /* ── Results ────────────────────────────────────────────────────────── */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 24px 0;
+        }
+        .score-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r);
+            padding: 18px 12px;
+            text-align: center;
+        }
+        .score-card:first-child {
+            border-color: rgba(124, 58, 237, 0.35);
+            background: var(--accent-dim);
+        }
+        .score-card div:first-child {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--txt-muted);
+            margin-bottom: 10px;
+        }
+        .score-card .score {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .score-card:first-child .score { font-size: 48px; }
+        .score-card small { font-size: 12px; color: var(--txt-muted); }
+
+        #pillars-summaries { margin-top: 4px; }
+        .result-section {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 16px 20px;
+            margin-top: 10px;
+            text-align: left;
+        }
+        .result-section h4 { margin-bottom: 10px; }
+        .result-section ul,
+        .result-section ol { padding-left: 18px; }
+        .result-section li {
+            font-size: 14px;
+            color: var(--txt-subtle);
+            margin: 7px 0;
+            line-height: 1.55;
+        }
+        .pillar-summary {
+            font-size: 14px;
+            color: var(--txt-subtle);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* ── Error ──────────────────────────────────────────────────────────── */
+        .error-message {
+            font-size: 13px;
+            color: var(--danger);
+            min-height: 18px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        /* ── Signature ──────────────────────────────────────────────────────── */
+        .signature {
+            text-align: center;
+            font-size: 11px;
+            color: #222;
+            margin-top: 36px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-style: normal;
+        }
+
+        /* ── CV Gap Analysis ───────────────────────────────────────────────── */
+        .gap-group { margin-bottom: 18px; }
+        .gap-group:last-child { margin-bottom: 0; }
+        .gap-group-label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .gap-high { background: rgba(239,68,68,0.12);  color: #f87171; }
+        .gap-med  { background: rgba(245,158,11,0.12); color: #fbbf24; }
+        .gap-low  { background: rgba(132,132,132,0.10); color: var(--txt-muted); }
+        .gap-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .gap-list li {
+            font-size: 12px;
+            color: var(--txt);
+            background: #0f2236;
+            border: 1px solid #1e3a58;
+            border-radius: 4px;
+            padding: 3px 10px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* ── Inline-style overrides ─────────────────────────────────────────── */
+        p[style*="width: 80%"] {
+            width: 100% !important;
+            color: var(--txt-subtle) !important;
+            font-size: 13px !important;
+            margin: 0 0 10px !important;
+            text-align: left !important;
+            line-height: 1.6;
+        }
+        p[style*="color: #a0a0a0"] {
+            color: var(--txt-muted) !important;
+            font-size: 12px !important;
+            margin-bottom: 10px !important;
+        }
+        div[style*="display:flex;gap:12px"] {
+            margin-top: 16px !important;
+        }
+
+        /* ── Overlay clé API ──────────────────────────────────────────────────── */
+        #api-key-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 12, 25, 0.93);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .api-key-card {
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r-lg);
+            padding: 40px 44px;
+            width: min(520px, 100%);
+            text-align: center;
+        }
+        .api-key-card h2 { margin-bottom: 8px; }
+        .api-key-card .subtitle { margin-bottom: 0; text-align: center; }
+        .api-key-card a { color: var(--accent); text-decoration: none; }
+        .api-key-card a:hover { text-decoration: underline; }
+        .api-key-hint {
+            font-size: 11px;
+            color: var(--txt-muted);
+            margin-top: 8px;
+            text-align: left;
+            line-height: 1.55;
+        }
+
+        /* ── Responsive ─────────────────────────────────────────────────────── */
+        @media (max-width: 640px) {
+            body { padding: 16px 12px 48px; }
+            .view-container { padding: 24px 20px; }
+            .step-connector { min-width: 20px; max-width: 60px; }
+            .step-label { display: none; }
+            .results-grid { grid-template-columns: repeat(2, 1fr); }
+            button, .btn-secondary { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="api-key-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+    <div class="api-key-card">
+        <h2 id="api-key-title">Clé API requise</h2>
+        <p class="subtitle">Cette application utilise l’API Google Gemini (accès gratuit disponible).<br>
+        Obtenez votre clé sur <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer">Google AI Studio</a>, puis collez-la ci-dessous.</p>
+        <div class="form-group" style="margin-top:24px;text-align:left;">
+            <label for="api-key-input">Votre clé API Gemini</label>
+            <input type="password" id="api-key-input" placeholder="AIza..." autocomplete="off">
+        </div>
+        <p class="api-key-hint">La clé est stockée uniquement dans votre navigateur (localStorage). Elle n’est jamais transmise à nos serveurs.</p>
+        <p class="error-message" id="api-key-error"></p>
+        <button onclick="saveApiKey()" style="margin-top:16px;">Confirmer et continuer →</button>
+    </div>
+</div>
+
+<header class="page-header">
+    <h1 class="page-title">Êtes-vous prêt·e pour le marché QA ?</h1>
+    <p class="page-subtitle">Diagnostic personnalisé — Formation AEC Spécialiste en qualité logicielle</p>
+</header>
+
+<nav class="stepper" data-cy="step-indicator">
+    <div class="step-item is-active" data-step="1">
+        <div class="step-bubble">1</div>
+        <span class="step-label">Audit</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" data-step="2">
+        <div class="step-bubble">2</div>
+        <span class="step-label">Analyse IA</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" data-step="3">
+        <div class="step-bubble">3</div>
+        <span class="step-label">Entrevue</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" data-step="4">
+        <div class="step-bubble">4</div>
+        <span class="step-label">Diagnostic</span>
+    </div>
+</nav>
+
+<!-- Conservé pour compatibilité JS -->
+<div class="progress-container">
+    <div class="progress-text" data-cy="progress-text"></div>
+    <div class="progress-bar"><div class="progress-fill" data-cy="progress-fill"></div></div>
+</div>
+
+<div class="view-container">
+    <section class="view is-active" id="step-initial" data-cy="step-initial">
+        <h2>Formulaire d'Évaluation - AEC QA</h2>
+        <p class="subtitle">Vos réponses serviront de point de départ pour l'entrevue technique ciblée avec le coach IA.</p>
+
+        <h3>1. Profil & Visibilité</h3>
+        <div class="form-group">
+            <label>Lien vers votre profil LinkedIn :</label>
+            <input type="url" placeholder="https://linkedin.com/in/votre-profil" data-cy="input-linkedin-url" id="linkedin-url">
+            <p id="linkedin-url-status" style="font-size: 12px; margin: 6px 0 0; min-height: 18px;"></p>
+        </div>
+        <div class="form-group">
+            <label>Statut de votre CV :</label>
+            <select data-cy="select-cv-status" id="cv-status">
+                <option value="draft">Brouillon / En rédaction</option>
+                <option value="ready">Rédigé, mais non révisé</option>
+                <option value="optimized">Révisé, optimisé et prêt à l'envoi</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Contenu de votre CV (copier/coller depuis Word ou PDF) :</label>
+            <p style="font-size: 13px; color: #a0a0a0; margin-bottom: 10px;">Le coach IA analysera le texte brut pour détecter les lacunes de mots-clés et vous poser des questions ciblées.</p>
+            <textarea rows="10" placeholder="Collez ici le texte intégral de votre CV..." data-cy="textarea-cv-content" id="cv-content" style="width: 100%;"></textarea>
+        </div>
+
+        <h3>2. Auto-évaluation Technique</h3>
+        <p style="font-size: 13px; color: #a0a0a0; margin-bottom: 20px;">1 : Théorique seulement - 5 : Pleinement autonome</p>
+
+        <div class="form-group">
+            <label>Stratégie et conception de tests manuels</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="manual-test" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="manual-test" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="manual-test" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="manual-test" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="manual-test" value="5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Automatisation Web (Selenium WebDriver, Robot Framework, Cucumber/Gherkin)</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="auto-web" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="auto-web" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="auto-web" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="auto-web" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="auto-web" value="5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Requêtes et tests d'API (Postman, etc.)</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="api-test" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="api-test" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="api-test" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="api-test" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="api-test" value="5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Utilisation des conteneurs pour stabiliser les environnements d'exécution (ex: VM, Docker)</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="docker-test" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="docker-test" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="docker-test" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="docker-test" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="docker-test" value="5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Optimisation de la couverture de tests via les méthodes combinatoires (ex: Pairwise)</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="pairwise-test" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="pairwise-test" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="pairwise-test" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="pairwise-test" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="pairwise-test" value="5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Analyse statique du code et suivi de la qualité (ex: revue, inspection, SonarQube)</label>
+            <div class="rating-group">
+                <label class="rating-item"><input type="radio" name="sonarqube-test" value="1">1</label>
+                <label class="rating-item"><input type="radio" name="sonarqube-test" value="2">2</label>
+                <label class="rating-item"><input type="radio" name="sonarqube-test" value="3">3</label>
+                <label class="rating-item"><input type="radio" name="sonarqube-test" value="4">4</label>
+                <label class="rating-item"><input type="radio" name="sonarqube-test" value="5">5</label>
+            </div>
+        </div>
+
+        <h3>3. Mises en Situation</h3>
+
+        <div class="form-group">
+            <label>Scénario Technique : Architecture</label>
+            <p style="font-size: 14px; color: #ddd; width: 80%; margin: 0 auto 10px auto;">On vous demande d'automatiser les tests de bout en bout d'un processus d'achat e-commerce. Décrivez brièvement votre stratégie (architecture, patrons de conception comme le POM, localisation des éléments et gestion des données).</p>
+            <textarea rows="4" placeholder="Saisissez votre réponse ici..." data-cy="textarea-tech-scenario" id="tech-scenario"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Scénario d'optimisation des données :</label>
+            <p style="font-size: 14px; color: #ddd; width: 80%; margin: 0 auto 10px auto;">Un formulaire d'inscription possède plusieurs champs avec de nombreuses options, générant des centaines de combinaisons possibles. Comment déterminez-vous la liste minimale des cas de tests à exécuter tout en garantissant une couverture de test optimale ?</p>
+            <textarea rows="4" placeholder="Saisissez votre réponse ici..." data-cy="textarea-optimization-scenario" id="optimization-scenario"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Scénario de robustesse de l'automatisation :</label>
+            <p style="font-size: 14px; color: #ddd; width: 80%; margin: 0 auto 10px auto;">Vos tests Web échouent souvent car l'interface change ou les classes CSS sont dynamiques. Quelle norme spécifique proposez-vous à l'équipe de développement pour rendre vos scripts de test plus résilients sur le long terme ?</p>
+            <textarea rows="4" placeholder="Saisissez votre réponse ici..." data-cy="textarea-robustness-scenario" id="robustness-scenario"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Scénario Comportemental :</label>
+            <p style="font-size: 14px; color: #ddd; width: 80%; margin: 0 auto 10px auto;">Le déploiement d'une version majeure est prévu dans 2 heures. Vous découvrez un bogue critique affectant 10% des utilisateurs. Le développeur leader refuse de corriger, jugeant cela trop risqué. Que faites-vous ?</p>
+            <textarea rows="4" placeholder="Saisissez votre réponse ici..." data-cy="textarea-soft-scenario" id="soft-scenario"></textarea>
+        </div>
+
+        <p class="error-message" id="step1-error" data-cy="step1-error"></p>
+        <button data-testid="submit-initial-form" id="submit-initial-form">Soumettre et générer mes questions d'entrevue</button>
+    </section>
+
+    <section class="view" id="step-loading" data-cy="step-loading">
+        <h2 id="loading-title">Analyse IA en cours…</h2>
+        <p class="subtitle" id="loading-subtitle">Le coach analyse votre profil et prépare une entrevue ciblée.</p>
+        <div class="spinner" aria-hidden="true"></div>
+    </section>
+
+    <section class="view" id="step-interview" data-cy="step-interview">
+        <h2>Entrevue Virtuelle - Questions de Forage</h2>
+        <p class="subtitle">Répondez à toutes les questions pour débloquer votre diagnostic final.</p>
+
+        <div class="coach-box" data-cy="ai-question-container">
+            <div id="questions-list"></div>
+        </div>
+
+        <p class="error-message" id="step3-error" data-cy="step3-error"></p>
+        <button id="submit-interview" data-testid="submit-interview-answers">Soumettre mes réponses</button>
+        <button class="btn-secondary" onclick="goBackToInitial()" data-cy="btn-back-to-initial">← Modifier mes réponses initiales</button>
+    </section>
+
+    <section class="view" id="step-results" data-cy="step-results">
+        <h2>Diagnostic Complet</h2>
+        <p class="subtitle">Synthèse finale basée sur vos réponses initiales et votre entrevue virtuelle.</p>
+
+        <div class="results-grid" data-cy="diagnostic-pillars">
+            <article class="score-card">
+                <div>Score global</div>
+                <div class="score" id="score-global">0</div>
+                <small>/ 100</small>
+            </article>
+            <article class="score-card">
+                <div>Visibilité</div>
+                <div class="score" id="score-visibility">0</div>
+                <small>/ 100</small>
+            </article>
+            <article class="score-card">
+                <div>Hard Skills</div>
+                <div class="score" id="score-hard">0</div>
+                <small>/ 100</small>
+            </article>
+            <article class="score-card">
+                <div>Soft Skills</div>
+                <div class="score" id="score-soft">0</div>
+                <small>/ 100</small>
+            </article>
+        </div>
+
+        <section class="result-section" id="linkedin-result-section" style="display:none">
+            <h4>Profil LinkedIn</h4>
+            <div id="linkedin-result-content"></div>
+        </section>
+
+        <div id="pillars-summaries"></div>
+
+        <section class="result-section" data-cy="red-flags-section">
+            <h4>Points critiques à corriger</h4>
+            <ul id="red-flags-list"></ul>
+        </section>
+
+        <section class="result-section" data-cy="action-plan-section">
+            <h4>Plan d'action priorisé</h4>
+            <ol id="action-plan-list"></ol>
+        </section>
+
+        <section class="result-section" id="cv-gaps-section" data-cy="cv-gaps-section" style="display:none">
+            <h4>Analyse du CV — Comp&#233;tences non d&#233;tect&#233;es</h4>
+            <div id="cv-gaps-content"></div>
+        </section>
+
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
+            <button onclick="exportMarkdown()" data-cy="btn-export-md">↓ Exporter en .md</button>
+            <button class="btn-secondary" onclick="goBackToInterview()" data-cy="btn-back-to-interview">← Modifier mes réponses d’entrevue</button>
+            <button class="btn-secondary" onclick="goBackToInitial()" data-cy="btn-restart">← Recommencer depuis le formulaire</button>
+        </div>
+    </section>
+</div>
+
+<div class="signature">
+    Talel Zid
+    &nbsp;·&nbsp;
+    <a href="#" onclick="resetApiKey(); return false;" style="color:inherit;opacity:0.55;text-decoration:none;" title="Réinitialiser la clé API">Réinitialiser la clé API</a>
+</div>
+
+<script src="config.js" onerror="if(typeof GEMINI_API_KEY==='undefined')window.GEMINI_API_KEY=null;"></script>
+<script src="skills_dictionary.js"></script>
+<script>
+    // ── Constantes IA ─────────────────────────────────────────────────────────
+    const GEMINI_MODEL    = 'gemini-2.5-flash';
+    const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
+
+    const SYSTEM_PROMPT_QUESTIONS = [
+        'Tu es un Recruteur Senior et Mentor spécialisé en Assurance Qualité Logicielle au Québec, avec 15 ans d\'expérience.',
+        'Tu maîtrises les standards du marché local : Selenium, Robot Framework, Playwright, Postman, ISTQB, Pairwise/PICT, Page Object Model, Docker, CI/CD (Jenkins, GitHub Actions), SonarQube, Jira.',
+        '',
+        'Ton mandat : analyser le profil complet d\'un candidat AEC QA et générer exactement 3 questions d\'entrevue hautement personnalisées.',
+        '',
+        'RÈGLES ABSOLUES :',
+        '- Chaque question cible une faiblesse ou zone d\'ombre SPÉCIFIQUE détectée dans le profil (jamais générique)',
+        '- Les questions forcent la preuve par des exemples concrets, des métriques ou des choix d\'architecture réels',
+        '- Ton exigeant mais constructif, en français professionnel',
+        '',
+        'Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte autour :',
+        '{"questions": ["question 1 complète", "question 2 complète", "question 3 complète"]}'
+    ].join('\n');
+
+    const SYSTEM_PROMPT_DIAGNOSTIC = [
+        'Tu es un Recruteur Senior et Mentor en Assurance Qualité Logicielle au Québec.',
+        'Tu produis le diagnostic d\'employabilité final d\'un candidat AEC QA (13 mois de formation).',
+        'Tu disposes de l\'intégralité de son dossier : formulaire initial + entrevue virtuelle de forage.',
+        '',
+        'GRILLE D\'ÉVALUATION :',
+        '• Visibilité (25 %) — CV, LinkedIn, densité des mots-clés QA essentiels sur le marché québécois',
+        '• Hard Skills (50 %) — automatisation (POM, sélecteurs stables, frameworks), tests manuels (Pairwise, PICT, partitions d\'équivalence), API, CI/CD, Docker, testabilité UI (data-cy/data-testid), SonarQube',
+        '• Soft Skills (25 %) — communication technique, gestion de conflits développeurs, résilience sous pression',
+        '',
+        'readiness_score = arrondi(visibility × 0.25 + hard_skills × 0.50 + soft_skills × 0.25)',
+        '',
+        'Réponds UNIQUEMENT avec un objet JSON valide selon ce format exact :',
+        '{',
+        '  "readiness_score": <entier 0-100>,',
+        '  "pillars": {',
+        '    "visibility":  { "score": <entier 0-100>, "summary": "<analyse en 2 phrases ciblées>" },',
+        '    "hard_skills": { "score": <entier 0-100>, "summary": "<analyse en 2 phrases ciblées>" },',
+        '    "soft_skills": { "score": <entier 0-100>, "summary": "<analyse en 2 phrases ciblées>" }',
+        '  },',
+        '  "red_flags": ["<signal critique 1>", "<signal critique 2>", "<signal critique 3>"],',
+        '  "action_plan": [',
+        '    { "priority": "Haute",   "task": "<action concrète et mesurable>" },',
+        '    { "priority": "Moyenne", "task": "<action concrète et mesurable>" },',
+        '    { "priority": "Faible",  "task": "<action concrète et mesurable>" }',
+        '  ]',
+        '}'
+    ].join('\n');
+
+    // ── Navigation & État ─────────────────────────────────────────────────────
+    const stepConfig = {
+        initial:           { label: 'ÉTAPE 1/4 : AUDIT INITIAL',     progress: '25%',  id: 'step-initial',   step: 1 },
+        loading:           { label: 'ÉTAPE 2/4 : ANALYSE IA',         progress: '50%',  id: 'step-loading',   step: 2 },
+        interview:         { label: 'ÉTAPE 3/4 : ENTREVUE VIRTUELLE', progress: '75%',  id: 'step-interview', step: 3 },
+        loadingDiagnostic: { label: 'ÉTAPE 4/4 : DIAGNOSTIC FINAL',   progress: '95%',  id: 'step-loading',   step: 4 },
+        results:           { label: 'ÉTAPE 4/4 : DIAGNOSTIC FINAL',   progress: '100%', id: 'step-results',   step: 4 }
+    };
+
+    const state = {
+        initialAnswers:    null,
+        interviewQuestions: [],
+        interviewAnswers:  [],
+        lastDiagnostic:    null
+    };
+
+    const progressText = document.querySelector('[data-cy="progress-text"]');
+    const progressFill = document.querySelector('[data-cy="progress-fill"]');
+    const views = document.querySelectorAll('.view');
+
+    const submitInitialBtn = document.getElementById('submit-initial-form');
+    const submitInterviewBtn = document.getElementById('submit-interview');
+
+    submitInitialBtn.addEventListener('click', onSubmitInitialForm);
+    submitInterviewBtn.addEventListener('click', onSubmitInterview);
+    document.getElementById('linkedin-url').addEventListener('input', checkLinkedInUrl);
+
+    function showStep(stepKey) {
+        const step = stepConfig[stepKey];
+        views.forEach((view) => {
+            view.classList.toggle('is-active', view.id === step.id);
+        });
+        progressText.textContent = step.label;
+        progressFill.style.width = step.progress;
+        updateStepper(step.step);
+    }
+
+    function updateStepper(activeStep) {
+        document.querySelectorAll('.step-item').forEach((item) => {
+            const n = parseInt(item.dataset.step, 10);
+            item.classList.toggle('is-active', n === activeStep);
+            item.classList.toggle('is-done',   n < activeStep);
+        });
+    }
+
+    function setLoadingMessage(title, subtitle) {
+        document.getElementById('loading-title').textContent    = title;
+        document.getElementById('loading-subtitle').textContent = subtitle;
+    }
+
+    // ── Validation URL LinkedIn ───────────────────────────────────────────────
+    function isLinkedInPersonalized(url) {
+        const match = url.match(/linkedin\.com\/in\/([^/\s?#]+)/i);
+        if (!match) return null;
+        const slug = match[1].toLowerCase().replace(/\/+$/, '');
+        const parts = slug.split('-');
+        // URL par défaut : au moins un segment mélange lettres+chiffres, ou est purement numérique
+        const hasHashSegment = parts.some(function(part) {
+            var isAlphanumMix = /^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{3,}$/.test(part);
+            var isPureNumeric  = /^[0-9]{4,}$/.test(part);
+            return isAlphanumMix || isPureNumeric;
+        });
+        return !hasHashSegment;
+    }
+
+    function checkLinkedInUrl() {
+        const url    = document.getElementById('linkedin-url').value.trim();
+        const status = document.getElementById('linkedin-url-status');
+        if (!url) { status.textContent = ''; return; }
+        const personalized = isLinkedInPersonalized(url);
+        if (personalized === null) {
+            status.textContent = 'Format non reconnu comme une URL LinkedIn.';
+            status.style.color = '#888';
+        } else if (personalized) {
+            status.textContent = '✓ URL personnalisée';
+            status.style.color = 'var(--brand)';
+        } else {
+            status.textContent = '⚠ URL par défaut détectée — personnalisez-la dans Paramètres LinkedIn → Modifier le profil public';
+            status.style.color = '#ffa726';
+        }
+    }
+
+    function getLinkedInPersonalizationLabel(url) {
+        if (!url) return 'Non renseignée';
+        const p = isLinkedInPersonalized(url);
+        if (p === null) return 'Format non reconnu';
+        return p
+            ? 'Oui — URL personnalisée'
+            : 'Non — URL par défaut avec identifiant aléatoire (signal négatif de visibilité professionnelle)';
+    }
+
+    function getSelectedRating(name) {
+        const selected = document.querySelector('input[name="' + name + '"]:checked');
+        return selected ? Number(selected.value) : null;
+    }
+
+    function collectInitialFormData() {
+        return {
+            linkedinUrl: document.getElementById('linkedin-url').value.trim(),
+            cvStatus: document.getElementById('cv-status').value,
+            cvContent: document.getElementById('cv-content').value.trim(),
+            ratings: {
+                manualTest: getSelectedRating('manual-test'),
+                autoWeb: getSelectedRating('auto-web'),
+                apiTest: getSelectedRating('api-test'),
+                dockerTest: getSelectedRating('docker-test'),
+                pairwiseTest: getSelectedRating('pairwise-test'),
+                sonarqubeTest: getSelectedRating('sonarqube-test')
+            },
+            scenarios: {
+                tech: document.getElementById('tech-scenario').value.trim(),
+                optimization: document.getElementById('optimization-scenario').value.trim(),
+                robustness: document.getElementById('robustness-scenario').value.trim(),
+                soft: document.getElementById('soft-scenario').value.trim()
+            }
+        };
+    }
+
+    function validateInitialForm(formData) {
+        const errorBlock = document.getElementById('step1-error');
+
+        if (!formData.linkedinUrl) {
+            errorBlock.textContent = 'Ajoutez votre URL LinkedIn pour continuer.';
+            return false;
+        }
+
+        if (!formData.cvContent) {
+            errorBlock.textContent = 'Collez le contenu de votre CV — il est indispensable pour l\'analyse textuelle.';
+            return false;
+        }
+
+        const hasAnyMissingRating = Object.values(formData.ratings).some((score) => score === null);
+        if (hasAnyMissingRating) {
+            errorBlock.textContent = 'Complétez toutes les auto-évaluations techniques (1 à 5).';
+            return false;
+        }
+
+        const hasAnyMissingScenario = Object.values(formData.scenarios).some((value) => !value);
+        if (hasAnyMissingScenario) {
+            errorBlock.textContent = 'Répondez aux 4 mises en situation avant de soumettre.';
+            return false;
+        }
+
+        errorBlock.textContent = '';
+        return true;
+    }
+
+    function formatAIError(err) {
+        const msg = err.message || '';
+        // Quota / rate-limit Gemini
+        const retryMatch = msg.match(/retry in\s+([\d.]+)\s*s/i);
+        if (retryMatch || /quota|rate.?limit/i.test(msg)) {
+            const secs = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : null;
+            const hint = /free_tier/i.test(msg)
+                ? ' (La facturation n\u2019est pas activ\u00e9e sur le projet Google Cloud associ\u00e9 \u00e0 cette cl\u00e9.)'
+                : '';
+            return '\u23f3 Quota API d\u00e9pass\u00e9.'
+                + (secs
+                    ? ' Patientez\u00a0' + secs + '\u00a0s puis relancez.'
+                    : ' R\u00e9essayez dans quelques instants.')
+                + hint;
+        }
+        // Cl\u00e9 API manquante
+        if (/introuvable|api.?key|401|403/i.test(msg)) return msg;
+        // Erreur g\u00e9n\u00e9rique — garder seulement la premi\u00e8re phrase
+        return 'Erreur IA\u00a0: ' + msg.split('\n')[0].split('.')[0] + '.';
+    }
+
+    async function onSubmitInitialForm() {
+        const data = collectInitialFormData();
+        if (!validateInitialForm(data)) {
+            return;
+        }
+
+        state.initialAnswers = data;
+        setLoadingMessage('Analyse IA en cours…', 'Le coach analyse votre profil et prépare une entrevue ciblée.');
+        showStep('loading');
+
+        try {
+            const questions = await generateAIInterviewQuestions(data);
+            state.interviewQuestions = questions;
+            renderQuestions(questions);
+            showStep('interview');
+        } catch (err) {
+            showStep('initial');
+            document.getElementById('step1-error').textContent = formatAIError(err);
+        }
+    }
+
+    // ── Clé API ────────────────────────────────────────────────────────────────
+    function getApiKey() {
+        if (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY) return GEMINI_API_KEY;
+        return localStorage.getItem('gemini_api_key') || null;
+    }
+
+    function saveApiKey() {
+        const key = document.getElementById('api-key-input').value.trim();
+        const errEl = document.getElementById('api-key-error');
+        if (!key) { errEl.textContent = 'Entrez une clé API valide.'; return; }
+        localStorage.setItem('gemini_api_key', key);
+        document.getElementById('api-key-overlay').style.display = 'none';
+        errEl.textContent = '';
+    }
+
+    function resetApiKey() {
+        localStorage.removeItem('gemini_api_key');
+        document.getElementById('api-key-input').value = '';
+        document.getElementById('api-key-overlay').style.display = 'flex';
+    }
+
+    // ── Couche IA — Gemini ────────────────────────────────────────────────────
+    async function callGemini(systemPrompt, userPrompt) {
+        const apiKey = getApiKey();
+        if (!apiKey) {
+            document.getElementById('api-key-overlay').style.display = 'flex';
+            throw new Error('Clé API Gemini manquante — configurez-la via l’écran de démarrage.');
+        }
+
+        const res = await fetch(GEMINI_ENDPOINT + '?key=' + apiKey, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                    temperature: 0.7,
+                    maxOutputTokens: 8192,
+                    thinkingConfig: { thinkingBudget: 0 }
+                }
+            })
+        });
+
+        if (!res.ok) {
+            const e = await res.json().catch(() => ({}));
+            throw new Error(e.error?.message || 'Erreur Gemini (' + res.status + ')');
+        }
+
+        const data = await res.json();
+        const parts = data.candidates?.[0]?.content?.parts || [];
+        const text = parts.find((p) => p.text && p.text.trim().startsWith('{'))?.text
+            || parts[parts.length - 1]?.text;
+        if (!text) throw new Error('Réponse vide de l\'API Gemini.');
+        return JSON.parse(text);
+    }
+
+    function buildQuestionPrompt(formData) {
+        const cvStatusLabel = { draft: 'Brouillon', ready: 'Rédigé non révisé', optimized: 'Optimisé prêt à l\'envoi' };
+        const ratingLabel = {
+            manualTest:    'Tests manuels & conception',
+            autoWeb:       'Automatisation Web (Selenium / Robot Framework / Cypress)',
+            apiTest:       'Tests d\'API (Postman)',
+            dockerTest:    'Conteneurisation (Docker)',
+            pairwiseTest:  'Méthodes combinatoires (Pairwise / PICT)',
+            sonarqubeTest: 'Analyse statique (SonarQube)'
+        };
+        const ratings = Object.entries(formData.ratings)
+            .map(([k, v]) => '- ' + (ratingLabel[k] || k) + ' : ' + v + '/5')
+            .join('\n');
+
+        const gaps = analyzeCVGaps(formData.cvContent);
+
+        return [
+            '## CV du candidat',
+            formData.cvContent || '(non fourni)',
+            '',
+            '## Lacunes détectées par le référentiel QA (compétences absentes du CV)',
+            'Critiques : '   + (gaps.haute.join(', ')   || 'aucune'),
+            'Secondaires : ' + (gaps.moyenne.join(', ') || 'aucune'),
+            '',
+            '## LinkedIn : ' + (formData.linkedinUrl || '(non fourni)'),
+            '## URL LinkedIn personnalisée : ' + getLinkedInPersonalizationLabel(formData.linkedinUrl),
+            '## Statut CV : ' + (cvStatusLabel[formData.cvStatus] || formData.cvStatus),
+            '',
+            '## Auto-évaluation technique (1=théorique · 5=autonome)',
+            ratings,
+            '',
+            '## Scénario — Architecture automatisation e-commerce',
+            formData.scenarios.tech || '(sans réponse)',
+            '',
+            '## Scénario — Optimisation combinatoire',
+            formData.scenarios.optimization || '(sans réponse)',
+            '',
+            '## Scénario — Robustesse des sélecteurs UI',
+            formData.scenarios.robustness || '(sans réponse)',
+            '',
+            '## Scénario — Comportement sous pression',
+            formData.scenarios.soft || '(sans réponse)',
+            '',
+            'Génère les 3 questions d\'entrevue.'
+        ].join('\n');
+    }
+
+    function buildDiagnosticPrompt(formData, interviewAnswers) {
+        const qaExchange = state.interviewQuestions
+            .map((q, i) => 'Q' + (i + 1) + ' : ' + q + '\nRéponse : ' + (interviewAnswers[i] || '(sans réponse)'))
+            .join('\n\n');
+        return buildQuestionPrompt(formData) +
+            '\n\n---\n\n## Entrevue virtuelle — Forage\n' + qaExchange +
+            '\n\nGénère le diagnostic complet.';
+    }
+
+    function analyzeCVGaps(cvText) {
+        if (!cvText || typeof QA_SKILLS_DICTIONARY === 'undefined') {
+            return { haute: [], moyenne: [], faible: [] };
+        }
+        const lower   = cvText.toLowerCase();
+        const missing = QA_SKILLS_DICTIONARY.filter(
+            (skill) => skill.keywords.length > 0
+                    && !skill.keywords.some((kw) => lower.includes(kw.toLowerCase()))
+        );
+        return {
+            haute:   missing.filter((s) => s.weight === 'haute').map((s)   => s.label),
+            moyenne: missing.filter((s) => s.weight === 'moyenne').map((s) => s.label),
+            faible:  missing.filter((s) => s.weight === 'faible').map((s)  => s.label),
+        };
+    }
+
+    async function generateAIInterviewQuestions(formData) {
+        const result = await callGemini(SYSTEM_PROMPT_QUESTIONS, buildQuestionPrompt(formData));
+        if (!Array.isArray(result.questions) || !result.questions.length) {
+            throw new Error('Format inattendu : champ "questions" manquant.');
+        }
+        return result.questions.slice(0, 3);
+    }
+
+    async function generateAIDiagnostic(formData, interviewAnswers) {
+        const result = await callGemini(SYSTEM_PROMPT_DIAGNOSTIC, buildDiagnosticPrompt(formData, interviewAnswers));
+        if (typeof result.readiness_score !== 'number' || !result.pillars) {
+            throw new Error('Structure JSON du diagnostic invalide.');
+        }
+        return result;
+    }
+
+    function renderQuestions(questions) {
+        const container = document.getElementById('questions-list');
+        container.innerHTML = '';
+
+        questions.forEach((question, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'question-item';
+            wrapper.innerHTML =
+                '<p>Question ' + (index + 1) + ':</p>' +
+                '<p>' + question + '</p>' +
+                '<textarea data-cy="interview-answer-' + (index + 1) + '" data-question-index="' + index + '" placeholder="Votre réponse détaillée..."></textarea>';
+            container.appendChild(wrapper);
+        });
+    }
+
+    function collectInterviewAnswers() {
+        const textareas = document.querySelectorAll('#questions-list textarea');
+        return Array.from(textareas).map((textarea) => textarea.value.trim());
+    }
+
+    function validateInterviewAnswers(answers) {
+        const errorBlock = document.getElementById('step3-error');
+        const hasEmptyAnswer = answers.some((answer) => !answer);
+
+        if (hasEmptyAnswer) {
+            errorBlock.textContent = 'Chaque question doit recevoir une réponse complète.';
+            return false;
+        }
+
+        errorBlock.textContent = '';
+        return true;
+    }
+
+    async function onSubmitInterview() {
+        const answers = collectInterviewAnswers();
+        if (!validateInterviewAnswers(answers)) return;
+
+        state.interviewAnswers = answers;
+
+        setLoadingMessage('Génération du diagnostic…', 'Consolidation de l\'ensemble de l\'échange et calcul du score de préparation.');
+        showStep('loadingDiagnostic');
+
+        try {
+            const diagnostic = await generateAIDiagnostic(state.initialAnswers, answers);
+            state.lastDiagnostic = diagnostic;
+            renderDiagnostic(diagnostic);
+            showStep('results');
+        } catch (err) {
+            showStep('interview');
+            document.getElementById('step3-error').textContent = formatAIError(err);
+        }
+    }
+
+    // ── Navigation retour ────────────────────────────────────────────────
+    function restoreInitialForm(formData) {
+        document.getElementById('linkedin-url').value = formData.linkedinUrl || '';
+        document.getElementById('cv-status').value    = formData.cvStatus    || 'draft';
+        document.getElementById('cv-content').value   = formData.cvContent   || '';
+
+        const ratingMap = {
+            manualTest: 'manual-test', autoWeb: 'auto-web',     apiTest: 'api-test',
+            dockerTest: 'docker-test', pairwiseTest: 'pairwise-test', sonarqubeTest: 'sonarqube-test'
+        };
+        Object.entries(formData.ratings).forEach(([key, value]) => {
+            if (value === null) return;
+            const radio = document.querySelector('input[name="' + ratingMap[key] + '"][value="' + value + '"]');
+            if (radio) radio.checked = true;
+        });
+
+        document.getElementById('tech-scenario').value         = formData.scenarios.tech          || '';
+        document.getElementById('optimization-scenario').value = formData.scenarios.optimization  || '';
+        document.getElementById('robustness-scenario').value   = formData.scenarios.robustness    || '';
+        document.getElementById('soft-scenario').value         = formData.scenarios.soft          || '';
+        document.getElementById('step1-error').textContent     = '';
+    }
+
+    function goBackToInitial() {
+        if (state.initialAnswers) restoreInitialForm(state.initialAnswers);
+        showStep('initial');
+    }
+
+    function goBackToInterview() {
+        document.querySelectorAll('#questions-list textarea').forEach((ta, i) => {
+            ta.value = state.interviewAnswers[i] || '';
+        });
+        document.getElementById('step3-error').textContent = '';
+        showStep('interview');
+    }
+
+
+    function exportMarkdown() {
+        const data = state.initialAnswers || {};
+        const diag = state.lastDiagnostic;
+        if (!diag) return;
+        const gaps = data.cvContent ? analyzeCVGaps(data.cvContent) : { haute: [], moyenne: [], faible: [] };
+        const linkedinUrl = data.linkedinUrl || '';
+        const personalized = linkedinUrl ? isLinkedInPersonalized(linkedinUrl) : null;
+        const pillarLabels = { visibility: 'Visibilité', hard_skills: 'Hard Skills', soft_skills: 'Soft Skills' };
+
+        const md = [];
+        md.push('# Diagnostic d’employabilité — AEC QA');
+        md.push('');
+        if (linkedinUrl) {
+            md.push('**LinkedIn :** ' + linkedinUrl + ' (' + (personalized ? '✓ URL personnalisée' : '⚠ URL non personnalisée') + ')');
+            md.push('');
+        }
+        md.push('## Scores');
+        md.push('');
+        md.push('| Critère | Score |');
+        md.push('|---|---|');
+        md.push('| **Score global** | **' + diag.readiness_score + ' / 100** |');
+        md.push('| Visibilité | ' + (diag.pillars.visibility?.score ?? '—') + ' / 100 |');
+        md.push('| Hard Skills | ' + (diag.pillars.hard_skills?.score ?? '—') + ' / 100 |');
+        md.push('| Soft Skills | ' + (diag.pillars.soft_skills?.score ?? '—') + ' / 100 |');
+        md.push('');
+        Object.entries(diag.pillars).forEach(function([key, pillar]) {
+            if (!pillar.summary) return;
+            md.push('### ' + (pillarLabels[key] || key));
+            md.push('');
+            md.push(pillar.summary);
+            md.push('');
+        });
+        if (diag.red_flags && diag.red_flags.length) {
+            md.push('## Points critiques à corriger');
+            md.push('');
+            diag.red_flags.forEach(function(f) { md.push('- ' + f); });
+            md.push('');
+        }
+        if (diag.action_plan && diag.action_plan.length) {
+            md.push('## Plan d’action priorisé');
+            md.push('');
+            diag.action_plan.forEach(function(item, i) {
+                md.push((i + 1) + '. **[' + item.priority + ']** ' + item.task);
+            });
+            md.push('');
+        }
+        if (gaps.haute.length || gaps.moyenne.length || gaps.faible.length) {
+            md.push('## Analyse du CV — Compétences non détectées');
+            md.push('');
+            if (gaps.haute.length)   md.push('**Incontournables :** ' + gaps.haute.join(', '));
+            if (gaps.moyenne.length) md.push('**Fortement recommandées :** ' + gaps.moyenne.join(', '));
+            if (gaps.faible.length)  md.push('**Complémentaires :** ' + gaps.faible.join(', '));
+            md.push('');
+        }
+        md.push('---');
+        md.push('*Généré par Diagnostic Employabilité QA — Talel Zid*');
+
+        const blob = new Blob([md.join('\n')], { type: 'text/markdown;charset=utf-8' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'diagnostic-qa.md';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function renderDiagnostic(diagnostic) {
+        document.getElementById('score-global').textContent     = diagnostic.readiness_score;
+        document.getElementById('score-visibility').textContent = diagnostic.pillars.visibility.score;
+        document.getElementById('score-hard').textContent       = diagnostic.pillars.hard_skills.score;
+        document.getElementById('score-soft').textContent       = diagnostic.pillars.soft_skills.score;
+
+        // Profil LinkedIn
+        const linkedinUrl = state.initialAnswers ? state.initialAnswers.linkedinUrl : '';
+        if (linkedinUrl) {
+            const personalized = isLinkedInPersonalized(linkedinUrl);
+            document.getElementById('linkedin-result-content').innerHTML =
+                '<a href="' + linkedinUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">' + linkedinUrl + '</a>' +
+                '<div style="margin-top:6px;font-size:13px;color:' + (personalized ? '#22c55e' : 'var(--danger)') + '">' +
+                (personalized ? '✓ URL personnalisée' : '⚠ URL non personnalisée — identifiant aléatoire détecté') + '</div>';
+            document.getElementById('linkedin-result-section').style.display = '';
+        }
+
+        // Synthèses par pilier
+        const summaries = document.getElementById('pillars-summaries');
+        summaries.innerHTML = '';
+        const pillarLabels = { visibility: 'Visibilité', hard_skills: 'Hard Skills', soft_skills: 'Soft Skills' };
+        Object.entries(diagnostic.pillars).forEach(([key, pillar]) => {
+            if (!pillar.summary) return;
+            const sec = document.createElement('div');
+            sec.className = 'result-section';
+            sec.innerHTML = '<h4>' + (pillarLabels[key] || key) + '</h4>' +
+                '<p class="pillar-summary">' + pillar.summary + '</p>';
+            summaries.appendChild(sec);
+        });
+
+        const redFlagsList = document.getElementById('red-flags-list');
+        redFlagsList.innerHTML = '';
+        (diagnostic.red_flags || []).forEach((flag) => {
+            const li = document.createElement('li');
+            li.textContent = flag;
+            redFlagsList.appendChild(li);
+        });
+
+        const actionPlanList = document.getElementById('action-plan-list');
+        actionPlanList.innerHTML = '';
+        (diagnostic.action_plan || []).forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = '[' + item.priority + '] ' + item.task;
+            actionPlanList.appendChild(li);
+        });
+
+        // Analyse des lacunes CV
+        const cvText = state.initialAnswers && state.initialAnswers.cvContent
+            ? state.initialAnswers.cvContent : '';
+        if (cvText) {
+            const gaps = analyzeCVGaps(cvText);
+            const gapsSection = document.getElementById('cv-gaps-section');
+            const gapsContent = document.getElementById('cv-gaps-content');
+            gapsContent.innerHTML = '';
+            const gapGroups = [
+                { key: 'haute',   label: 'Incontournables',          cls: 'gap-high' },
+                { key: 'moyenne', label: 'Fortement recommand\u00e9es', cls: 'gap-med'  },
+                { key: 'faible',  label: 'Compl\u00e9mentaires',        cls: 'gap-low'  }
+            ];
+            let hasAny = false;
+            gapGroups.forEach(function(group) {
+                const items = gaps[group.key];
+                if (!items || !items.length) return;
+                hasAny = true;
+                const div = document.createElement('div');
+                div.className = 'gap-group';
+                const badge = document.createElement('div');
+                badge.className = 'gap-group-label ' + group.cls;
+                badge.textContent = group.label + '\u2002(' + items.length + ')';
+                div.appendChild(badge);
+                const ul = document.createElement('ul');
+                ul.className = 'gap-list';
+                items.forEach(function(skill) {
+                    const li = document.createElement('li');
+                    li.textContent = skill;
+                    ul.appendChild(li);
+                });
+                div.appendChild(ul);
+                gapsContent.appendChild(div);
+            });
+            if (hasAny) gapsSection.style.display = '';
+        }
+    }
+
+    // ── Initialisation ────────────────────────────────────────────────────────
+    if (!getApiKey()) {
+        document.getElementById('api-key-overlay').style.display = 'flex';
+    }
+</script>
+</body>
+</html>
