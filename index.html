@@ -182,7 +182,7 @@
             display: block;
             font-size: 13px;
             font-weight: 500;
-            color: var(--txt-subtle);
+            color: var(--txt);
             margin-bottom: 7px;
             text-align: left;
         }
@@ -208,7 +208,7 @@
         }
         select { cursor: pointer; }
         textarea { resize: vertical; }
-        ::placeholder { color: #3a5a78; }
+        ::placeholder { color: var(--txt-muted); }
 
         /* ── LinkedIn hint ──────────────────────────────────────────────────── */
         #linkedin-url-status { font-size: 12px; margin-top: 5px; min-height: 16px; text-align: left; }
@@ -454,8 +454,8 @@
             line-height: 1.6;
         }
         p[style*="color: #a0a0a0"] {
-            color: var(--txt-muted) !important;
-            font-size: 12px !important;
+            color: var(--txt-subtle) !important;
+            font-size: 13px !important;
             margin-bottom: 10px !important;
         }
         div[style*="display:flex;gap:12px"] {
@@ -758,8 +758,6 @@
 
 <div class="signature">
     Talel Zid
-    &nbsp;·&nbsp;
-    <a href="#" onclick="resetApiKey(); return false;" style="color:inherit;opacity:0.55;text-decoration:none;" title="Réinitialiser la clé API">Réinitialiser la clé API</a>
 </div>
 
 <script src="config.js" onerror="if(typeof GEMINI_API_KEY==='undefined')window.GEMINI_API_KEY=null;"></script>
