@@ -28,8 +28,10 @@ jobs:
       - name: Injecter la clé API Gemini
         # La clé est stockée dans Settings → Secrets → GEMINI_API_KEY
         # Elle n'apparaît jamais dans le code source ni dans l'historique Git
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "const GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > config.js
+          printf 'const GEMINI_API_KEY = "%s";\n' "$GEMINI_API_KEY" > config.js
 
       - name: Configurer GitHub Pages
         uses: actions/configure-pages@v5
