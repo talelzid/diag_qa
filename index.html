@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -1283,12 +1283,24 @@
             md.push('');
         }
         if (gaps.haute.length || gaps.moyenne.length || gaps.faible.length) {
-            md.push('## Analyse du CV — Compétences non détectées');
+            md.push('## Analyse du CV \u2014 Comp\u00e9tences non d\u00e9tect\u00e9es');
             md.push('');
-            if (gaps.haute.length)   md.push('**Incontournables :** ' + gaps.haute.join(', '));
-            if (gaps.moyenne.length) md.push('**Fortement recommandées :** ' + gaps.moyenne.join(', '));
-            if (gaps.faible.length)  md.push('**Complémentaires :** ' + gaps.faible.join(', '));
-            md.push('');
+            var gapDefs = [
+                { key: 'haute',   label: 'Incontournables',        pill: 'background:#4a1515;color:#f87171;border:1px solid #7f1d1d' },
+                { key: 'moyenne', label: 'Fortement recommand\u00e9es', pill: 'background:#3d2a00;color:#fbbf24;border:1px solid #78350f' },
+                { key: 'faible',  label: 'Compl\u00e9mentaires',        pill: 'background:#1a1a1a;color:#a3a3a3;border:1px solid #404040' }
+            ];
+            gapDefs.forEach(function(def) {
+                var items = gaps[def.key];
+                if (!items || !items.length) return;
+                md.push('**' + def.label + '** (' + items.length + ')');
+                md.push('');
+                var pills = items.map(function(skill) {
+                    return '<span style="display:inline-block;' + def.pill + ';border-radius:4px;padding:2px 9px;font-size:12px;margin:2px 3px 2px 0">' + skill + '</span>';
+                });
+                md.push(pills.join(' '));
+                md.push('');
+            });
         }
         md.push('---');
         md.push('*Généré par Diagnostic Employabilité QA — Talel Zid*');
@@ -1309,14 +1321,77 @@
         const answers   = state.interviewAnswers;
         if (!questions.length) return;
 
-        const linkedinUrl = state.initialAnswers ? state.initialAnswers.linkedinUrl : '';
+        const initial     = state.initialAnswers || {};
+        const linkedinUrl = initial.linkedinUrl || '';
+        const cvStatusLabel = { draft: 'Brouillon / En rédaction', ready: 'Rédigé, mais non révisé', optimized: 'Révisé, optimisé et prêt à l\'envoi' };
+        const ratingLabel = {
+            manualTest:    'Stratégie et conception de tests manuels',
+            autoWeb:       'Automatisation Web (Selenium / Robot Framework / Cucumber)',
+            apiTest:       'Requêtes et tests d\'API (Postman)',
+            dockerTest:    'Conteneurisation (VM, Docker)',
+            pairwiseTest:  'Méthodes combinatoires (Pairwise)',
+            sonarqubeTest: 'Analyse statique (SonarQube)'
+        };
+        const scenarioLabel = {
+            tech:         'Architecture automatisation e-commerce',
+            optimization: 'Optimisation combinatoire',
+            robustness:   'Robustesse des sélecteurs UI',
+            soft:         'Comportement sous pression'
+        };
+
         const md = [];
-        md.push('# Entrevue virtuelle — Questions et réponses');
+        md.push('# Dossier d\'entrevue — AEC QA');
         md.push('');
+
+        // ── Section 1 : Formulaire initial ──
+        md.push('## Partie 1 — Formulaire d\'audit initial');
+        md.push('');
+
         if (linkedinUrl) {
-            md.push('**Candidat·e :** ' + linkedinUrl);
+            const personalized = isLinkedInPersonalized(linkedinUrl);
+            md.push('**LinkedIn :** ' + linkedinUrl + ' (' + (personalized ? '✓ URL personnalisée' : '⚠ URL non personnalisée') + ')');
             md.push('');
         }
+        if (initial.cvStatus) {
+            md.push('**Statut du CV :** ' + (cvStatusLabel[initial.cvStatus] || initial.cvStatus));
+            md.push('');
+        }
+
+        if (initial.ratings && Object.keys(initial.ratings).length) {
+            md.push('### Auto-évaluation technique (1 = théorique · 5 = autonome)');
+            md.push('');
+            md.push('| Compétence | Score |');
+            md.push('|---|---|');
+            Object.entries(initial.ratings).forEach(function([key, value]) {
+                md.push('| ' + (ratingLabel[key] || key) + ' | ' + (value !== null ? value + ' / 5' : '—') + ' |');
+            });
+            md.push('');
+        }
+
+        if (initial.scenarios && Object.keys(initial.scenarios).length) {
+            md.push('### Mises en situation');
+            md.push('');
+            Object.entries(initial.scenarios).forEach(function([key, value]) {
+                md.push('**' + (scenarioLabel[key] || key) + '**');
+                md.push('');
+                md.push(value || '*— sans réponse*');
+                md.push('');
+            });
+        }
+
+        if (initial.cvContent) {
+            md.push('### Contenu du CV');
+            md.push('');
+            md.push(initial.cvContent);
+            md.push('');
+        }
+
+        md.push('---');
+        md.push('');
+
+        // ── Section 2 : Entrevue virtuelle ──
+        md.push('## Partie 2 — Entrevue virtuelle (questions de forage)');
+        md.push('');
         md.push('---');
         md.push('');
         questions.forEach(function(question, i) {
